@@ -9,12 +9,12 @@ plugins {
     `maven-publish`
 }
 
-version = project.properties["version"].toString() + if (project.hasProperty("version_snapshot")) "-SNAPSHOT" else ""
 group = project.properties["maven_group"].toString()
+base.archivesName = project.properties["archives_base_name"].toString()
+version = project.properties["version"].toString() + if (project.hasProperty("version_snapshot")) "-SNAPSHOT" else ""
+
 
 val javaVersion = libs.versions.java.get().toInt()
-
-base.archivesName = project.properties["archives_base_name"].toString()
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
@@ -50,11 +50,10 @@ sourceSets {
         }
     }
 
-    val api: SourceSet by creating {
-        inputOf(sourceSets.main.get())
-    }
+    val api: SourceSet by creating
 
     val main: SourceSet by getting {
+        inputOf(api)
         outputOf(api)
     }
 
@@ -188,8 +187,8 @@ tasks {
 gradlePlugin {
     plugins {
         create("simplePlugin") {
-            id = group.toString()
-            implementationClass = "com.unimined.UniminedPlugin"
+            id = "$group"
+            implementationClass = "$group.gradle.UniminedPlugin"
         }
     }
 }
