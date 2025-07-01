@@ -1,25 +1,24 @@
 [versions]
 java = "8"
-kotlin = "2.1.10"
-jb-annotations = "24.1.0"
+kotlin = "2.2.0"
+jb-annotations = "26.0.2"
 
 guava = "33.4.0-jre"
 gson = "2.12.1"
 
-asm = "9.7.1"
+asm = "9.8"
 
 tiny-remapper = "0.8.7"
 unimined-mapping-library = "1.2.1"
 
-binarypatcher = "1.1.1"
-jbsdiff = "1.0"
+binarypatcher = "3.0.10"
 
 commons-io = "2.18.0"
 commons-compress = "1.27.1"
 
 access-widener = "2.1.0"
 
-jgit = "5.13.2.202306221912-r"
+jgit = "7.3.0.202506031305-r"
 
 keyring = "1.0.2"
 minecraftauth = "4.1.1"
@@ -27,6 +26,10 @@ minecraftauth = "4.1.1"
 junit = "5.12.0"
 
 dokka = "2.0.0"
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 
 [libraries]
 jb-annotations = { module = "org.jetbrains:annotations", version.ref = "jb-annotations" }
@@ -43,7 +46,6 @@ tiny-remapper = { module = "net.fabricmc:tiny-remapper", version.ref = "tiny-rem
 unimined-mapping-library-jvm = { module = "xyz.wagyourtail.unimined.mapping:unimined-mapping-library-jvm", version.ref = "unimined-mapping-library" }
 
 binarypatcher = { module = "net.minecraftforge:binarypatcher", version.ref = "binarypatcher" }
-jbsdiff = { module = "io.sigpipe:jbsdiff", version.ref = "jbsdiff" }
 
 access-widener = { module = "net.fabricmc:access-widener", version.ref = "access-widener" }
 
@@ -60,6 +62,3 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 
 [bundles]
 asm-all = ["asm", "asm-commons", "asm-tree", "asm-analysis", "asm-util"]
-
-[plugins]
-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
