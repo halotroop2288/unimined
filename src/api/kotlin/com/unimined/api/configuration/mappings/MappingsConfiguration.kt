@@ -21,12 +21,17 @@ abstract class MappingsConfiguration(
 	 * It is therefore desirable, but not required to always add an intermediary mappings source at the end of the list.
 	 *
 	 * e.g.
+	 *
+	 * ## Standard Parchment Usage
+	 *
 	 * 1. Mojmap
 	 * 2. Parchment
 	 *
 	 * - Mojmap names will be applied, applying the names used in the official source code
 	 * - Because Mojang does not provide them, Parchment comments and parameter names will be applied.
 	 * - Because Mojmap has been applied, nothing will fall back to the obfuscated "official" names.
+	 *
+	 * ## Legacy Fallback Strategy
 	 *
 	 * 1. Legacy Yarn
 	 * 2. Feather
@@ -36,10 +41,10 @@ abstract class MappingsConfiguration(
 	 * - Legacy Yarn names and comments will be applied
 	 * - Any names that have not yet been mapped which would normally fall back to Legacy Fabric Intermediary
 	 * will then fall back to Feather names.
-	 * - Any names that have not yet been mapped which would normally fall back to Ploceus will then fall back to
+	 * - Any names that have not yet been mapped which would normally fall back to Ploceus
 	 * will then fall back to MCP names.
-	 * - Any names that have not yet been mapped which would normally fall back to Searge will then fall back to
-	 * will then fall back to Ploceus names.
+	 * - Any names that have not yet been mapped which would normally fall back to Searge
+	 * will then fall back to Ploceus intermediate names.
 	 */
 	sources: List<MappingsSource> = listOf(),
 	/**

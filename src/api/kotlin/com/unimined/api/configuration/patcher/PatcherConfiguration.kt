@@ -30,19 +30,8 @@ abstract class PatcherConfiguration(
 	 * This should return `0` if the position is valid,
 	 * or throw an error if the position can't be rectified.
 	 *
-	 * e.g.
-	 * - `null` before `Searge` or `Ploceus` or `Legacy Fabric Intermediary` or `Fabric Intermediary` or `Hashed Mojmap`
-	 * (any Fabric-style intermediary)
-	 * - `null` before `Mojmap` or `"NMS"`
-	 * - `null` before `RetroMCP` or `MCP Legacy` (pre-Searge)
-	 * - `Searge` before `Unknown Thingy`, `MCP Snapshot` or `MCP Stable` or `Forge Built-in MCP`
-	 * - `Babric Intermediary` before `Biny`
-	 * - `Ploceus` before `Feather`
-	 * - `Legacy Intermediary` before `Legacy Yarn`
-	 * - `Fabric Intermediary` before `Yarn`
-	 *
 	 * @return The relative position this patcher wants to be moved to.
-	 *
+	 * @throws IllegalArgumentException if this patcher isn't in the list.
 	 * @since 2.0.0
 	 */
 	protected fun validatePosition(
