@@ -164,6 +164,11 @@ open class EnvironmentComponent(
 		 * Values that are supported by the ecosystem by default
 		 */
 		internal val supportedValues = listOf<String>("CLIENT", "SERVER", "COMBINED", "DATAGEN")
+
+		/**
+		 * Creates environment components for all the supplied values and returns them inside an array.
+		 */
+		fun arrayOf(vararg values: String): Array<EnvironmentComponent> = values.map { EnvironmentComponent(it) }.toTypedArray()
 	}
 
 	/**

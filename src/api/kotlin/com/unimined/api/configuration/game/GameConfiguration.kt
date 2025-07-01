@@ -1,10 +1,7 @@
 package com.unimined.api.configuration.game
 
-import com.unimined.api.Component
 import com.unimined.api.ComponentContainer
 import com.unimined.api.EnvironmentComponent
-import com.unimined.api.NameComponent
-import com.unimined.api.VersionComponent
 import com.unimined.api.configuration.mappings.MappingsConfiguration
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 
@@ -42,5 +39,5 @@ open class GameConfiguration internal constructor(
 ) : ComponentContainer(
 	key = "$gameName Configuration",
 	*mappings, *patchers,
-	*environments.map { EnvironmentComponent(it) }.toTypedArray()
+	*EnvironmentComponent.arrayOf(*environments)
 )
