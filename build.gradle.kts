@@ -3,30 +3,24 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 
 plugins {
-    kotlin("jvm") version libs.versions.kotlin.get()
+    alias(libs.plugins.kotlin)
     alias(libs.plugins.dokka)
     `java-gradle-plugin`
     `maven-publish`
 }
 
-version = if (project.hasProperty("version_snapshot")) project.properties["version"] as String + "-SNAPSHOT" else project.properties["version"] as String
-group = project.properties["maven_group"] as String
+group = project.properties["maven_group"].toString()
+base.archivesName = project.properties["archives_base_name"].toString()
+version = project.properties["version"].toString() + if (project.hasProperty("version_snapshot")) "-SNAPSHOT" else ""
 
-base {
-    archivesName.set(project.properties["archives_base_name"] as String)
-}
+val javaVersion = libs.versions.java.get().toInt()
 
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get().toInt()))
-    }
-
+    toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
     withSourcesJar()
 }
 
-kotlin {
-    jvmToolchain(libs.versions.java.get().toInt())
-}
+kotlin.jvmToolchain(javaVersion)
 
 repositories {
     mavenLocal()
@@ -34,86 +28,93 @@ repositories {
     maven("https://maven.wagyourtail.xyz/releases")
     maven("https://maven.wagyourtail.xyz/snapshots")
     maven("https://maven.neoforged.net/releases")
-    maven("https://maven.minecraftforge.net/")
+    maven("https://maven.minecraftforge.net")
     maven("https://maven.fabricmc.net/")
     gradlePluginPortal()
 }
 
-fun SourceSet.inputOf(vararg sourceSets: SourceSet) {
-    for (sourceSet in sourceSets) {
-        compileClasspath += sourceSet.compileClasspath
-        runtimeClasspath += sourceSet.runtimeClasspath
+sourceSets {
+    fun SourceSet.inputOf(vararg sourceSets: SourceSet) = sourceSets.forEach {
+		compileClasspath += it.compileClasspath
+		runtimeClasspath += it.runtimeClasspath
+	}
+
+    fun SourceSet.outputOf(vararg sourceSets: SourceSet) = sourceSets.forEach {
+		compileClasspath += it.output
+		runtimeClasspath += it.output
+	}
+
+    // Please don't add plugins or their dependencies to the API or implementation's classpath.
+    // It will inevitably cause the code to unravel.
+    val main: SourceSet by getting
+
+    val gradle: SourceSet by creating {
+        inputOf(main)
+        outputOf(main)
     }
-}
 
-fun SourceSet.outputOf(vararg sourceSets: SourceSet) {
-    for (sourceSet in sourceSets) {
-        compileClasspath += sourceSet.output
-        runtimeClasspath += sourceSet.output
+    // Remapper Patcher Plugin
+    val remapperPlugin: SourceSet by creating {
+        inputOf(main)
+        outputOf(main)
     }
-}
 
-val api by sourceSets.creating {
-    inputOf(sourceSets.main.get())
-}
+    val minecraftPlugin: SourceSet by creating {
+        inputOf(main, remapperPlugin)
+        outputOf(main, remapperPlugin)
+    }
 
-val mapping by sourceSets.creating {
-    inputOf(sourceSets.main.get())
-    outputOf(api)
-}
+    val fabricmcPlugin: SourceSet by creating {
+        inputOf(main, remapperPlugin)
+        outputOf(main, remapperPlugin)
+    }
 
-val source by sourceSets.creating {
-    inputOf(sourceSets.main.get())
-    outputOf(mapping, api)
-}
+    val quiltmcPlugin: SourceSet by creating {
+        inputOf(main, remapperPlugin, fabricmcPlugin)
+        outputOf(main, remapperPlugin, fabricmcPlugin)
+    }
 
-val mods by sourceSets.creating {
-    inputOf(sourceSets.main.get())
-    outputOf(api, mapping, source)
-}
+    val lexforgePlugin: SourceSet by creating {
+        inputOf(main, minecraftPlugin)
+        outputOf(main, minecraftPlugin)
+    }
 
-val runs by sourceSets.creating {
-    inputOf(sourceSets.main.get())
-    outputOf(api)
-}
+    val neoforgedPlugin: SourceSet by creating {
+        inputOf(main, lexforgePlugin, minecraftPlugin)
+        outputOf(main, lexforgePlugin, minecraftPlugin)
+    }
 
-val minecraft by sourceSets.creating {
-    inputOf(sourceSets.main.get())
-    outputOf(api, mapping, mods, runs, source)
-}
-
-val main by sourceSets.getting {
-    outputOf(api, mapping, source, mods, runs, minecraft)
-}
-
-val test by sourceSets.getting {
-    inputOf(sourceSets.main.get())
-    outputOf(api, mapping, source, mods, runs, minecraft)
+    val test: SourceSet by getting {
+        val sets = sourceSets.filterNot { it == this }.toTypedArray()
+        inputOf(*sets)
+        outputOf(*sets)
+    }
 }
 
 dependencies {
-    runtimeOnly(gradleApi())
     implementation(kotlin("metadata-jvm"))
     implementation(libs.jb.annotations)
+    implementation(libs.wagyourtail.commons)
 
-    implementation(libs.guava)
-    implementation(libs.gson)
+    "gradleRuntimeOnly"(gradleApi())
 
-    implementation(libs.asm)
-    implementation(libs.asm.commons)
-    implementation(libs.asm.tree)
-    implementation(libs.asm.analysis)
-    implementation(libs.asm.util)
+    "gradleImplementation"(libs.guava)
+    "gradleImplementation"(libs.gson)
 
-    implementation(libs.unimined.mapping.library.jvm)
-    implementation(libs.tiny.remapper) {
+    "gradleImplementation"(libs.asm)
+    "gradleImplementation"(libs.asm.commons)
+    "gradleImplementation"(libs.asm.tree)
+    "gradleImplementation"(libs.asm.analysis)
+    "gradleImplementation"(libs.asm.util)
+
+    "remapperPluginImplementation"(libs.unimined.mapping.library.jvm)
+    "remapperPluginImplementation"(libs.tiny.remapper) {
         exclude(group = "org.ow2.asm")
     }
 
     implementation(libs.binarypatcher) {
         exclude(mapOf("group" to "commons-io"))
     }
-    implementation(libs.jbsdiff)
 
     implementation(libs.access.widener)
 
@@ -130,90 +131,130 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
-tasks.jar {
-    from(
-        sourceSets["api"].output,
-        sourceSets["mapping"].output,
-        sourceSets["source"].output,
-        sourceSets["mods"].output,
-        sourceSets["runs"].output,
-        sourceSets["minecraft"].output,
-        sourceSets["main"].output
-    )
+tasks {
+    wrapper {
+        gradleVersion = libs.versions.gradle.get()
+    }
 
-    manifest {
-        attributes(
-            "Implementation-Version" to if (project.hasProperty("version_snapshot")) {
-                val stdout = ByteArrayOutputStream()
-                exec {
-                    commandLine("git", "rev-parse", "--short", "HEAD")
-                    standardOutput = stdout
-                }.assertNormalExitValue()
-                buildString {
-                    append(project.version.toString().removeSuffix("-SNAPSHOT"))
-                    append("-")
-                    append(stdout.toString().trim())
-                    append("-SNAPSHOT")
-                }
-            } else project.version
+    jar {
+        enabled = false
+    }
+
+    val implementationVersion: Pair<String, String> by lazy {
+        "Implementation-Version" to if (project.hasProperty("version_snapshot")) {
+            val stdout = ByteArrayOutputStream()
+            @Suppress("DEPRECATION")
+            project.exec {
+                commandLine("git", "rev-parse", "--short", "HEAD")
+                standardOutput = stdout
+            }.assertNormalExitValue()
+            buildString {
+                append(project.version.toString().removeSuffix("-SNAPSHOT"))
+                append("-")
+                append(stdout.toString().trim())
+                append("-SNAPSHOT")
+            }
+        } else project.version.toString()
+    }
+
+    val apiJar by registering(Jar::class) {
+        group = "build"
+        archiveBaseName = "api"
+        from(sourceSets["main"].output)
+
+        manifest {
+            attributes(implementationVersion)
+        }
+    }
+
+    val apiSourcesJar by registering(Jar::class) {
+        group = "build"
+        archiveBaseName = "api"
+        archiveClassifier = "sources"
+        from(sourceSets["gradle"].allSource)
+
+        manifest {
+            attributes(implementationVersion)
+        }
+    }
+
+    // Built-in plugin implementations, included in all implementations
+    val patcherSets by lazy {
+        sourceSets.filter { it.name.endsWith("Plugin") }
+    }
+
+    val gradleJar by registering(Jar::class) {
+        group = "build"
+        archiveBaseName = "gradle"
+        from(
+            sourceSets["main"].output,
+            sourceSets["gradle"].output,
+            patcherSets.map { it.output }
         )
-    }
-}
 
-val sourcesJar by tasks.getting(Jar::class) {
-    from(
-        api.allSource,
-        minecraft.allSource,
-        mapping.allSource,
-        sourceSets["source"].allSource,
-        mods.allSource,
-        runs.allSource,
-        main.allSource
-    )
-}
-
-tasks.build {
-    dependsOn(sourcesJar)
-}
-
-tasks.test {
-    useJUnitPlatform()
-
-    testLogging {
-        events.add(TestLogEvent.PASSED)
-        events.add(TestLogEvent.SKIPPED)
-        events.add(TestLogEvent.FAILED)
-    }
-}
-
-tasks.dokkaHtml {
-    outputDirectory.set(projectDir.resolve("docs/api-docs/"))
-    dokkaSourceSets {
-        named("main") {
-            suppress = true
-        }
-        named("api") {
-            suppress = false
+        manifest {
+            attributes(implementationVersion)
         }
     }
-    doFirst {
-        file("Writerside/v.list").writeText(
-            """
+
+    val gradleSourcesJar by registering(Jar::class) {
+        group = "build"
+        archiveBaseName = "gradle"
+        archiveClassifier = "sources"
+        from(
+            sourceSets["main"].allSource,
+            sourceSets["gradle"].allSource,
+            patcherSets.map { it.allSource }
+        )
+
+        manifest {
+            attributes(implementationVersion)
+        }
+    }
+
+    build {
+        dependsOn(apiJar, gradleSourcesJar)
+    }
+
+    test {
+        useJUnitPlatform()
+
+        testLogging {
+            events.add(TestLogEvent.PASSED)
+            events.add(TestLogEvent.SKIPPED)
+            events.add(TestLogEvent.FAILED)
+        }
+    }
+
+    dokkaHtml {
+        outputDirectory.set(projectDir.resolve("docs/api-docs/"))
+        dokkaSourceSets {
+            named("main") {
+                suppress = false
+            }
+            named("gradle") {
+                suppress = true
+            }
+        }
+        doFirst {
+            file("Writerside/v.list").writeText(
+                """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <!DOCTYPE vars SYSTEM "https://resources.jetbrains.com/writerside/1.0/vars.dtd">
                 <vars>
                     <var name="version" value="${project.version}"/>
                 </vars>
             """.trimIndent()
-        )
+            )
+        }
     }
 }
 
 gradlePlugin {
     plugins {
-        create("simplePlugin") {
-            id = "xyz.wagyourtail.unimined"
-            implementationClass = "xyz.wagyourtail.unimined.UniminedPlugin"
+        create("unimined") {
+            id = "$group"
+            implementationClass = "$group.gradle.UniminedGradlePlugin"
         }
     }
 }
@@ -236,15 +277,14 @@ val writeActionsTestMatrix by tasks.registering {
     doLast {
         val testMatrix = arrayListOf<String>()
 
-        file("src/test/kotlin/xyz/wagyourtail/unimined/test/integration").listFiles()?.forEach {
+        file("src/test/kotlin/com/unimined/test/integration").listFiles()?.forEach {
             if (it.name.endsWith("Test.kt")) {
-
                 val className = it.name.replace(".kt", "")
-                testMatrix.add("xyz.wagyourtail.unimined.test.integration.${className}")
+                testMatrix.add("$group.test.integration.${className}")
             }
         }
 
-        testMatrix.add("xyz.wagyourtail.unimined.util.*")
+        testMatrix.add("$group.util.*")
 
         val json = groovy.json.JsonOutput.toJson(testMatrix)
         val output = file("build/test_matrix.json")
@@ -259,13 +299,13 @@ val writeActionsTestMatrix by tasks.registering {
 abstract class PrintActionsTestName : DefaultTask() {
     @get:Input
     @get:Option(option = "name", description = "The test name")
-    abstract val testName: Property<String>;
+    abstract val testName: Property<String>
 
     @TaskAction
     fun run() {
         val sanitised = testName.get().replace('*', '_')
-        File(System.getenv()["GITHUB_OUTPUT"]).writeText("\ntest=$sanitised")
+        File(System.getenv()["GITHUB_OUTPUT"] ?: TODO()).writeText("\ntest=$sanitised")
     }
 }
 
-tasks.register<PrintActionsTestName>("printActionsTestName") {}
+tasks.register<PrintActionsTestName>("printActionsTestName")
