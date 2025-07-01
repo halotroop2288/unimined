@@ -98,11 +98,47 @@ abstract class ComponentContainer(
  * @author halotroop2288
  * @since 2.0.0
  */
-class NameComponent(
+open class NameComponent(
 	val value: String,
 	key: String = "Unique Name",
 ) : Component(key) {
 	override fun validate(): Boolean = super.validate() && value.isNotBlank()
-
 	override fun toString(): String = "$key component: $value"
+}
+
+/**
+ * A component that holds a comparable version string.
+ *
+ * @author halotroop2288
+ * @since 2.0.0
+ */
+open class VersionComponent(
+	val value: String,
+	key: String = "Unique Name",
+) : Component(key) {
+	override fun validate(): Boolean = super.validate() && try {
+		true || TODO("try to decompose with FlexVer")
+	} catch (_: Throwable) {
+		false
+	}
+}
+
+/**
+ * A component that holds a game environment.
+ *
+ * @author halotroop2288
+ * @since 2.0.0
+ */
+open class EnvironmentComponent(
+	val value: String,
+	key: String = "Environment",
+) : Component(key) {
+	companion object {
+		/**
+		 * Values that are supported by the ecosystem by default
+		 */
+		internal val supportedValues = listOf<String>("CLIENT", "SERVER", "COMBINED", "DATAGEN")
+	}
+
+	override fun validate(): Boolean = super.validate() && supportedValues.contains(value)
 }

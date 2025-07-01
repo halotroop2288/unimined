@@ -1,7 +1,8 @@
 package com.unimined.api.provider.project
 
 import com.unimined.api.Component
-import com.unimined.api.configuration.project.UniminedConfigBuilder
+import com.unimined.api.configuration.game.GameConfiguration
+import com.unimined.api.configuration.project.UniminedConfiguration
 
 /**
  * # Unimined Configuration Provider
@@ -35,6 +36,4 @@ abstract class UniminedConfigProvider(
 	 * @since 2.0.0
 	 */
 	uniqueName: String,
-): Component(uniqueName) {
-	abstract fun builder(name: String = "Main"): UniminedConfigBuilder<*>
-}
+): Component(uniqueName), (String, GameConfiguration) -> UniminedConfiguration

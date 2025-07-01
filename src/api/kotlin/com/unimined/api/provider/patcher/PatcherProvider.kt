@@ -1,12 +1,12 @@
-package com.unimined.api.provider.game
+package com.unimined.api.provider.patcher
 
 import com.unimined.api.Component
 import com.unimined.api.configuration.game.GameConfiguration
-import com.unimined.api.configuration.mappings.MappingsConfiguration
+import com.unimined.api.configuration.patcher.PatcherConfiguration
 
 /**
- * Exactly one game configuration may be registered per Unimined configuration.
- * Game Providers handle GameConfiguration instances.
+ * Many patcher configurations may be applied to a [GameConfiguration].
+ * Patcher Providers supply [PatcherConfiguration] instances.
  *
  * It should contain all the necessary information to create a mod or plugin
  * for exactly one version of the game,
@@ -18,21 +18,20 @@ import com.unimined.api.configuration.mappings.MappingsConfiguration
  * @author halotroop2288
  * @since 2.0.0
  */
-abstract class GameProvider(
+abstract class PatcherProvider(
 	/**
-	 * This name can be anything, but it has to be unique among all the other game providers!
+	 * This name can be anything, but it has to be unique among all the other patcher providers!
 	 * It will uniquely identify the provider in lookups.
 	 *
 	 * **Note: Case-sensitive!**
 	 *
 	 * e.g
-	 * - `"Minecraft"`
-	 * - `"ReIndev"`
-	 * - `"Better Than Adventure"`
-	 * - `"Not So Seecret Saturday"`
-	 * - `"RuneScape"`
+	 * - `"Access Transformer"`, `"Access Widener"`
+	 * - `"Forge Mod Loader"`, `"Fancy Mod Loader"`
+	 * - `"Minecraft Forge"`, `"NeoForge"`
+	 * - `"Fabric Loader"`, `"Quilt Loader"`
 	 *
 	 * @since 2.0.0
 	 */
 	uniqueName: String,
-): Component(uniqueName), (List<MappingsConfiguration>, List<Any>) -> GameConfiguration
+): Component(uniqueName), (String) -> PatcherConfiguration

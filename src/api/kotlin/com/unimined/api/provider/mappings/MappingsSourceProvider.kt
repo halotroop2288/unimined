@@ -1,5 +1,7 @@
 package com.unimined.api.provider.mappings
 
+import com.unimined.api.configuration.mappings.MappingsSource
+
 /**
  * # Mappings Provider
  *
@@ -8,7 +10,7 @@ package com.unimined.api.provider.mappings
  * @author halotroop2288
  * @since 2.0.0
  */
-abstract class MappingsProvider(
+abstract class MappingsSourceProvider(
 	/**
 	 * This name can be anything, but it has to be unique among all the other mappings providers!
 	 * It will uniquely identify the provider in lookups.
@@ -50,5 +52,5 @@ abstract class MappingsProvider(
 	 *
 	 * @since 2.0.0
 	 */
-	val previous: MappingsProvider? = null,
-)
+	val previous: MappingsSourceProvider? = null,
+) : () -> MappingsSource
