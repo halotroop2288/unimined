@@ -1,6 +1,5 @@
 package com.unimined.api.configuration.project
 
-import com.unimined.api.Builder
 import com.unimined.api.ComponentContainer
 import com.unimined.api.configuration.game.GameConfiguration
 
@@ -26,7 +25,7 @@ abstract class UniminedConfiguration(
  * @author halotroop2288
  * @since 2.0.0
  */
-abstract class UniminedConfigBuilder<T : UniminedConfiguration>(
+abstract class UniminedConfigBuilder<out T : UniminedConfiguration>(
 	/**
 	 * This name can be anything, but it has to be unique among all the other Unimined configurations!
 	 * It will uniquely identify the provider in lookups.
@@ -43,6 +42,6 @@ abstract class UniminedConfigBuilder<T : UniminedConfiguration>(
 	 */
 	var configurationName: String = "Main",
 	var gameConfiguration: GameConfiguration,
-): Builder<T> {
+): () -> T {
 	fun name(value: String): UniminedConfigBuilder<T> = apply { configurationName = value }
 }
