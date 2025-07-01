@@ -62,8 +62,8 @@ Yes, this is possible, see [PrcraftExampleMod](https://github.com/prcraft-minecr
 
 ## Recommended Setup
 1. take one of the versions from [testing](./testing)
-1. remove `includeBuild('../../')` from `settings.gradle`
-1. put a proper version number for the plugin in `build.grade`
+2. remove `includeBuild('../../')` from `settings.gradle`
+3. put a proper version number for the plugin in `build.grade`
 
 ## Other Setups
 
