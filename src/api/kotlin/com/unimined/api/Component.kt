@@ -3,7 +3,7 @@ package com.unimined.api
 import kotlin.reflect.KClass
 
 /**
- * A sometimes-optional value that can be validated.
+ * A sometimes-optional value that can be validated and pretty-printed with [toString].
  *
  * @author halotroop2288
  * @since 2.0.0
@@ -15,10 +15,12 @@ abstract class Component(
 	 * This can be used to ensure only one component with the key exists during validation,
 	 * or to find all the components with the same key.
 	 */
-	val key: String
+	val key: String,
 ) {
 	/**
 	 * Returns true if the component is valid.
+	 *
+	 * 1. Key must not be blank (or null).
 	 *
 	 * @since 2.0.0
 	 */
@@ -35,12 +37,34 @@ abstract class Component(
  * @author halotroop2288
  * @since 2.0.0
  */
-abstract class ComponentContainer(
-	uniqueKey: String,
-	val components: Set<Component>
-) : Component(uniqueKey), Set<Component> by components {
-	override fun validate(): Boolean = hasAnyNamed("Unique Name") && super.validate()
-	override fun toString(): String = "$key container: ${components.joinToString(",\n\t", "[", "]")}"
+abstract class ComponentContainer private constructor(
+	/**
+	 * The unique key that identifies the container.
+	 *
+	 * e.g.
+	 * - "Game Configuration Provider"
+	 * - "Game Configuration"
+	 * - "Mappings Configuration Provider"
+	 * - "Mappings Configuration"
+	 */
+	key: String,
+	val components: Set<Component>,
+) : Component(key), Set<Component> by components {
+	companion object {
+		private const val KEY_NAME: String = "Unique Key"
+	}
+
+	constructor(key: String, vararg components: Component) :
+			this(key, setOf(*components, NameComponent(KEY_NAME, key)))
+
+	/**
+	 * 1. Only one key may be the unique identifier.
+	 * 2. All child components must also be valid.
+	 */
+	override fun validate(): Boolean = hasOneNamed(KEY_NAME) && super.validate()
+
+	override fun toString(): String =
+		"${this@ComponentContainer.key} container: ${components.joinToString(", ", "[", "]")}"
 
 	/**
 	 * Returns true if this contains ANY components with the specified type.
@@ -98,10 +122,11 @@ abstract class ComponentContainer(
  * @author halotroop2288
  * @since 2.0.0
  */
-open class NameComponent(
-	val value: String,
-	key: String = "Unique Name",
-) : Component(key) {
+open class NameComponent(key: String, val value: String) : Component(key) {
+	/**
+	 * 1. Key must not be blank (or null).
+	 * 2. Value must also not be blank.
+	 */
 	override fun validate(): Boolean = super.validate() && value.isNotBlank()
 	override fun toString(): String = "$key component: $value"
 }
@@ -112,10 +137,11 @@ open class NameComponent(
  * @author halotroop2288
  * @since 2.0.0
  */
-open class VersionComponent(
-	val value: String,
-	key: String = "Unique Name",
-) : Component(key) {
+open class VersionComponent(val value: String, key: String = "Version") : Component(key) {
+	/**
+	 * 1. Key must not be blank (or null).
+	 * 2. Value must be a valid version. It will be validated by a *very flexible* version scheme. No excuses.
+	 */
 	override fun validate(): Boolean = super.validate() && try {
 		true || TODO("try to decompose with FlexVer")
 	} catch (_: Throwable) {
@@ -140,5 +166,9 @@ open class EnvironmentComponent(
 		internal val supportedValues = listOf<String>("CLIENT", "SERVER", "COMBINED", "DATAGEN")
 	}
 
+	/**
+	 * 1. Key must not be blank (or null).
+	 * 2. Value must be one of the [supported values][supportedValues].
+	 */
 	override fun validate(): Boolean = super.validate() && supportedValues.contains(value)
 }

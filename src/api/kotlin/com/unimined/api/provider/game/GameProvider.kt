@@ -3,6 +3,7 @@ package com.unimined.api.provider.game
 import com.unimined.api.Component
 import com.unimined.api.configuration.game.GameConfiguration
 import com.unimined.api.configuration.mappings.MappingsConfiguration
+import com.unimined.api.configuration.patcher.PatcherConfiguration
 
 /**
  * Exactly one game configuration may be registered per Unimined configuration.
@@ -35,4 +36,4 @@ abstract class GameProvider(
 	 * @since 2.0.0
 	 */
 	uniqueName: String,
-): Component(uniqueName), (List<MappingsConfiguration>, List<Any>) -> GameConfiguration
+): Component(uniqueName), (Array<MappingsConfiguration>, Array<PatcherConfiguration>) -> GameConfiguration

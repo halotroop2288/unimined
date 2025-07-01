@@ -25,20 +25,44 @@ abstract class PatcherConfiguration(
 	 * @since 2.0.0
 	 */
 	patcherName: String,
-
+): ComponentContainer(patcherName) {
 	/**
-	 * Optional. A valid and existing version name that corresponds to an existing released version of the game.
+	 * This should return `0` if the position is valid,
+	 * or throw an error if the position can't be rectified.
 	 *
-	 * e.g
-	 * - "1.2.5"
-	 * - "b1.7.3"
-	 * - "a1.2.3"
-	 * - "12w34a"
-	 * - "20w14infinite"
+	 * e.g.
+	 * - `null` before `Searge` or `Ploceus` or `Legacy Fabric Intermediary` or `Fabric Intermediary` or `Hashed Mojmap`
+	 * (any Fabric-style intermediary)
+	 * - `null` before `Mojmap` or `"NMS"`
+	 * - `null` before `RetroMCP` or `MCP Legacy` (pre-Searge)
+	 * - `Searge` before `Unknown Thingy`, `MCP Snapshot` or `MCP Stable` or `Forge Built-in MCP`
+	 * - `Babric Intermediary` before `Biny`
+	 * - `Ploceus` before `Feather`
+	 * - `Legacy Intermediary` before `Legacy Yarn`
+	 * - `Fabric Intermediary` before `Yarn`
+	 *
+	 * @return The relative position this patcher wants to be moved to.
 	 *
 	 * @since 2.0.0
 	 */
-	gameVersion: String? = null,
-): ComponentContainer(patcherName, setOf(
-
-))
+	protected fun validatePosition(
+		/**
+		 * Ordered list of patcher configurations that have already been applied.
+		 *
+		 * e.g. `2` if this is the third patcher (arrays are zero-indexed)
+		 */
+		position: Int,
+		/**
+		 * Ordered list of patcher configurations in which this is indexed at [position].
+		 *
+		 * e.g.
+		 * - AccessWidener(named = false),
+		 * - Remapper(configuration = ...),
+		 * - AccessWidener(named = true),
+		 * - ForgeModLoader(version = ...),
+		 * - MinecraftForge(version = ...),
+		 */
+		patchers: List<PatcherConfiguration>,
+	): (Int) = if (patchers[position] == this) 0
+	else throw IllegalArgumentException("Invalid position. Configuration not found.")
+}

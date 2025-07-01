@@ -1,8 +1,7 @@
 package com.unimined.api.configuration.mappings
 
-import com.unimined.api.Component
-import com.unimined.api.NameComponent
 import com.unimined.api.ComponentContainer
+import com.unimined.api.EnvironmentComponent
 
 /**
  * # Mappings Set Provider Configuration
@@ -14,8 +13,10 @@ import com.unimined.api.ComponentContainer
  * @since 2.0.0
  */
 abstract class MappingsConfiguration(
-	componentName: String = "Mappings Configuration",
-	sources: List<MappingsSource> = TODO(),
-) : ComponentContainer(componentName, setOf<Component>().apply {
-
-} + NameComponent(componentName))
+	sources: Array<MappingsSource> = arrayOf(),
+	vararg environments: String = arrayOf("COMBINED")
+) : ComponentContainer(
+	key = "Mappings Configuration",
+	*sources,
+	*environments.map { EnvironmentComponent(it) }.toTypedArray()
+)

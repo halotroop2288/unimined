@@ -14,11 +14,9 @@ abstract class UniminedConfiguration(
 //	cache: CacheConfiguration,
 ): ComponentContainer(
 	uniqueName,
-	setOf(
-		game,
-		TODO("Decompiler settings"),
-		TODO("Cache settings")
-	)
+	game,
+	TODO("Decompiler settings"),
+	TODO("Cache settings")
 )
 
 /**

@@ -5,8 +5,21 @@ import com.unimined.api.configuration.game.GameConfiguration
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 
 /**
- * Many patcher configurations may be applied to a [GameConfiguration].
- * Patcher Providers supply [PatcherConfiguration] instances.
+ * # Patcher Provider
+ *
+ * Many [patcher configurations][PatcherConfiguration] may be applied to a [GameConfiguration].
+ *
+ * Patcher Providers return [PatcherConfiguration] instances by themselves.
+ *
+ * ```kt
+ * val gameProvider: GameProvider = TODO("Your provider here. Example: Minecraft")
+ * val patcherProvider: PatcherProvider = TODO("Your provider here. Example: Remapper")
+ * val patcherConfiguration: PatcherConfiguration = provider(configuration)
+ * val patchers = listOf(patcherConfiguration)
+ * val gameConfiguration: GameConfiguration = gameProvider(patchers = patchers)
+ * ```
+ *
+ * Those configurations will then be passed back into the provider's functions to apply them.
  *
  * It should contain all the necessary information to create a mod or plugin
  * for exactly one version of the game,

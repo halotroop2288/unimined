@@ -1,6 +1,6 @@
 package com.unimined.api.configuration.mappings
 
-import com.unimined.api.Component
+import com.unimined.api.NameComponent
 
 /**
  * # Obfuscation Mappings Source
@@ -8,5 +8,9 @@ import com.unimined.api.Component
  * For lack of a better term, this class describes how to resolve the file containing the set of obfuscation mappings.
  */
 abstract class MappingsSource(
+	/**
+	 * The name of the obfuscation mappings this source provides.
+	 */
+	name: String,
 
-): Component("Mappings")
+): NameComponent("Mappings Source", name)

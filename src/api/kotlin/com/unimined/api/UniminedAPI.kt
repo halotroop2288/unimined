@@ -3,6 +3,7 @@ package com.unimined.api
 import com.unimined.api.configuration.game.GameConfiguration
 import com.unimined.api.configuration.mappings.MappingsConfiguration
 import com.unimined.api.configuration.mappings.MappingsSource
+import com.unimined.api.configuration.patcher.PatcherConfiguration
 import com.unimined.api.configuration.project.UniminedConfiguration
 import com.unimined.api.provider.game.GameProvider
 import com.unimined.api.provider.mappings.MappingsSourceProvider
@@ -78,44 +79,70 @@ import java.util.ServiceLoader
  * @author halotroop2288
  * @since 2.0.0
  */
-object UniminedAPI {
-	val configProvider: UniminedConfigProvider by lazy {
-		ServiceLoader.load(UniminedConfigProvider::class.java).single()
+interface UniminedAPI {
+	val configProvider: UniminedConfigProvider
+
+	object GameProviders: () -> Set<GameProvider> {
+		val values: Set<GameProvider> by lazy {
+			ServiceLoader.load(GameProvider::class.java).toSet()
+		}
+
+		override fun invoke(): Set<GameProvider> = values
+
+		fun find(key: String): GameProvider = this().single { it.key == key }
 	}
 
-	val gameProviders: List<GameProvider> by lazy {
-		ServiceLoader.load(GameProvider::class.java).toList()
+	object MappingsProviders: () -> Set<MappingsSourceProvider> {
+		val values: Set<MappingsSourceProvider> by lazy {
+			ServiceLoader.load(MappingsSourceProvider::class.java).toSet()
+		}
+
+		override fun invoke(): Set<MappingsSourceProvider> = values
+
+		fun find(key: String): MappingsSourceProvider = this().single { it.key == key }
 	}
 
-	val mappingsSourceProviders: List<MappingsSourceProvider> by lazy {
-		ServiceLoader.load(MappingsSourceProvider::class.java).toList()
-	}
-}
+	/**
+	 * Resolve these configurations to start the process!
+	 *
+	 * @since 2.0.0
+	 */
+	val configurations: HashSet<() -> UniminedConfiguration>
 
-val configuration = configurationBuilder()
+	/**
+	 * Returns a Unimined configuration supplier.
+	 */
+	fun configureUnimined(
+		configName: String = "Main",
+		game: () -> GameConfiguration = configureGame(),
+	//	decompiler: () -> DecompilerConfiguration = TODO(),
+	//	cache: () -> () -> CacheConfiguration = TODO(),
+	): () -> UniminedConfiguration
 
-fun configurationBuilder(
-	configName: String = "Main",
-	game: () -> GameConfiguration = gameBuilder(),
-//	decompiler: () -> Any = TODO(),
-//	cache: () -> () -> Any = TODO(),
-): () -> UniminedConfiguration = fun() = UniminedAPI.configProvider(configName, game())
+	/**
+	 * Returns a game configuration supplier.
+	 */
+	fun configureGame(
+		gameName: String = "Unknown",
+		mappings: () -> MappingsConfiguration = TODO("MappingsProvider should be an object."),
+		patchers: () -> PatcherConfiguration = TODO(),
+	): () -> GameConfiguration
 
-fun gameBuilder(
-	gameName: String = "Minecraft",
-	mappings: () -> List<MappingsConfiguration> = listOf(mappingsConfigurationBuilder()),
-	patchers: () -> Any = TODO(),
-): () -> GameConfiguration = fun() = UniminedAPI.gameProviders.single {
-	it.key == gameName
-}(mappings(), patchers())
+	/**
+	 * Returns a mappings configuration supplier.
+	 */
+	fun configureMappings(
+		sources: List<() -> MappingsSource>
+	): () -> MappingsConfiguration = TODO()
 
-fun mappingsConfigurationBuilder(
-	sources: () -> List<() -> MappingsSource> = TODO(),
-	environment: () -> String = fun(): String = "COMBINED",
-): () -> MappingsConfiguration
+	/**
+	 * Returns a mappingsSourceSupplier
+	 */
+	fun configureMappingsSource(
+		sourceName: String = "Official"
+	): () -> MappingsSource
 
-fun mappingsSourceBuilder(
-	sourceName: String
-) = fun() = UniminedAPI.mappingsSourceProviders.single {
-	it.key == sourceName
+	fun configurePatcher(
+
+	): () -> PatcherConfiguration
 }

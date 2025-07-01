@@ -2,6 +2,9 @@ package com.unimined.api.configuration.game
 
 import com.unimined.api.Component
 import com.unimined.api.ComponentContainer
+import com.unimined.api.EnvironmentComponent
+import com.unimined.api.NameComponent
+import com.unimined.api.VersionComponent
 import com.unimined.api.configuration.mappings.MappingsConfiguration
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 
@@ -33,25 +36,11 @@ open class GameConfiguration internal constructor(
 	 */
 	gameName: String,
 
-	/**
-	 * Optional. A valid and existing version name that corresponds to an existing released version of the game.
-	 *
-	 * e.g
-	 * - "1.2.5"
-	 * - "b1.7.3"
-	 * - "a1.2.3"
-	 * - "12w34a"
-	 * - "20w14infinite"
-	 *
-	 * @since 2.0.0
-	 */
-	gameVersion: String? = null,
-
-	mappings: List<MappingsConfiguration>,
-	patchers: List<PatcherConfiguration>,
-	environments: Set<String> = setOf("COMBINED")
-) : ComponentContainer(gameName, hashSetOf<Component>().apply {
-	addAll(mappings)
-	addAll(patchers)
-	environments.map {  }
-})
+	mappings: Array<MappingsConfiguration>,
+	patchers: Array<PatcherConfiguration> = arrayOf(),
+	vararg environments: String = arrayOf("COMBINED")
+) : ComponentContainer(
+	key = "$gameName Configuration",
+	*mappings, *patchers,
+	*environments.map { EnvironmentComponent(it) }.toTypedArray()
+)
