@@ -1,8 +1,12 @@
 # Unimined
 
-Unified Minecraft modding environment with support for legacy environments.
+Plugin-based, **unified** modding toolchain with support for legacy tools.
 
-for details on usage, see [the docs](Writerside/topics/starter-topic.md)
+[Gradle](https://gradle.org) is already supported.
+Support is planned for [IntelliJ Platform](https://www.jetbrains.com/opensource/idea)
+and [Apache Maven](https://maven.apache.org) in version 2.0+.
+
+For details on usage, see [the docs](Writerside/topics/starter-topic.md)
 
 ## LTS Branch
 
@@ -11,7 +15,45 @@ In effect, this means that I always support the previous minor version for bugfi
 
 By consequence, seeing as it's only bugfixes, snapshots on the LTS branch are considered *relatively* stable as well.
 
-## Supported Loaders
+## Games / Total Conversion Mods
+
+### Supported Games (1.x)
+
+* [Minecraft](https://minecraft.net)
+* [Minecraft: ReIndev](https://reindev.miraheze.org/wiki/Reindev_Wiki)
+* [Minecraft: Better Than Adventure](https://betterthanadventure.net)
+
+## Planned Games
+
+* [Not So Seecret Saturday](https://www.notsoseecretsaturday.net)
+
+## Plugins
+
+Below is a somewhat-comprehensive list of all first-party supported major features (although we may have missed some).
+
+Starting in 2.0.0, additional
+target game providers,
+obfuscation mappings providers,
+mod loader patchers,
+and other kinds of patchers that act on the game and other classpath files such as mods
+can be added through a new plugin system.
+
+## Games / Total Conversion Mods
+
+### Supported Games (1.x)
+
+* [Minecraft](https://minecraft.net)
+* [Minecraft: ReIndev](https://reindev.miraheze.org/wiki/Reindev_Wiki)
+* [Minecraft: Better Than Adventure](https://betterthanadventure.net)
+
+## Planned Games
+
+* [Not So Seecret Saturday](https://www.notsoseecretsaturday.net)
+
+## Loaders
+
+### Supported Loaders (1.x)
+
 * [Fabric](https://fabricmc.net)
 * [Quilt](https://quiltmc.org)
 * [Minecraft Forge](https://minecraftforge.net)
@@ -25,51 +67,85 @@ By consequence, seeing as it's only bugfixes, snapshots on the LTS branch are co
 * [CraftBukkit](https://bukkit.org)
 * [Spigot](https://www.spigotmc.org)
 * [Paper](https://papermc.io)
-* Risugami's ModLoader
-* just plain jarmodding
+* [Risugami's ModLoader](https://mcarchive.net/mods/modloader)
+* just plain jar modding
 
-## Planned Loaders
+### Planned Loaders
+
 * [Sponge](https://spongepowered.org/]Sponge)
 * [NilLoader](https://git.sleeping.town/Nil/NilLoader)
 
-## Custom Loaders
-Yes, this is possible, see [PrcraftExampleMod](https://github.com/prcraft-minecraft/PrcraftExampleMod) and it's buildsrc dir.
+## TODO (2.x)
 
-## Supported Games / Total Conversion Mods
-* [Minecraft](https://minecraft.net)
-* [Minecraft: ReIndev](https://reindev.miraheze.org/wiki/Reindev_Wiki)
-* [Minecraft: Better Than Adventure](https://betterthanadventure.net)
+* Finish Platform-Independent API
+  - Unimined Provider
+  - Game Provider
+  - Mappings Provider
+  - Unimined Configuration
+    - Game Configuration
+      - Mappings Configuration
+      - Patchers Configuration
+* Game Plugins *
+  - [ ] Minecraft: Java Edition
+    - Provider name: `Minecraft`
+    - Builder name: `minecraft`
+    - Artifact: `net.minecraft:minecraft`
+  - [ ] Minecraft: Better Than Adventure
+    - Provider name: `Better Than Adventure`
+    - Builder function: `reIndev`
+    - Artifact: `net.betterthanadventure:bta`
+  - [ ] Minecraft: ReIndev
+    - Provider name: `ReIndev`
+    - Builder function: `reIndev`
+    - Artifact: `net.silveros:reindev`
+  - [ ] Minecraft: Not So Seecret Saturday **
+    - Provider name: `Not So Secret Saturday`
+    - Builder function: `nsss`
+    - Artifact: `net.notsoseecretsaturday:nsss`
 
-## Planned Games / Total Conversion Mods
-* [Not So Seecret Saturday](https://www.notsoseecretsaturday.net)
+* Patcher Plugins *
+  - [ ] Remapper:
+    - Setup: Apply deobfuscation mappings, access transformation, and interface injection
+      to all classpath files + game files (`*.class`, `*.java`, javadoc `*.html`?)
+    - Commit: When paired with Decompiler (see below), optionally remap source before generating patches
+    - Build: Remap the build output to the namespaces specified in `finalizeTo` in the mappings configuration
+  - [ ] Decompiler:
+    - Setup: Decompile the game classes to their respective source sets and apply source patches
+    - Commit: Generate source patches from Git subproject
+    - Build: Generate binary patches + jar containing them
+  - [ ] AccessWidener:
+    - Setup: Parse `*.accesswidener` files from all mods (incl. project)
+      and try to apply transitive ones to all target files
+  - [ ] AccessTransformer:
+    - Setup: Parse `accesstransformer.cfg` files from all mods (incl. project)
+      and try to apply to all target files
+  - [ ] Fabric Loader: Add Fabric Loader to the classpath and create run configurations for Knot
+    - [ ] FabricMC
+    - [ ] Babric
+    - [ ] Turnip Labs (BTA)
+  - [ ] Quilt Loader: See Fabric Loader.
+  - [ ] Minecraft Forge
+    - [ ] ForgeGradle 1
+    - [ ] ForgeGradle 2
+    - [ ] ForgeGradle 3
+    - [ ] NeoForged
+    - [ ] CleanroomMC
+  - [ ] FoxLoader
+  - [ ] Flint Loader
+  - [ ] CraftBukkit
+  - [ ] Spigot
+  - [ ] Paper
+  - [ ] ModLoader
+* Gradle Plugin
+* IntelliJ Platform Plugin (for IDEA Community Edition)*
+* Apache Maven Plugin
+*
 
-## TODO
-* stop using artifactural
-* rework mcpconfig runner to be more kotlin and less old version of arch-loom code
-* Support for launch configs in other dev envs
-  * vscode
-  * eclipse
-* support to login to minecraft in dev
-* support to launch with the prod jar
-* add datagen support
-  * forge datagen
-  * fabric datagen
-  * quilt datagen
-* fix yarn on neoforge (these will probably be agents, possibly in separate projects and pulled like JarModAgent)
-  * inject remapper into ASMAPI
-  * reflection remapper (also for forge potentially, or in general).
-* genSources should apply forge source patches (at least on fg3+)
+\* - New Feature in 2.x
+\** - New Feature that was planned for 1.x
 
-## Recommended Setup
-1. take one of the versions from [testing](./testing)
-1. remove `includeBuild('../../')` from `settings.gradle`
-1. put a proper version number for the plugin in `build.grade`
+## Recommended Gradle Setup
 
-## Other Setups
-
-### Arch-Loom Style
-* direct porting of arch-loom projects without changing the directory structure is possible.
-* instructions pending...
-### third party template(s)
-* arch style: https://github.com/firstdarkdev/fdd-xplat or https://github.com/LegacyModdingMC/examplemod
-* //todo: add more
+[//]: # (TODO: Example repo)
+1. Generate a repository from the [template repository]() 
+2. Set the latest version for the Unimined plugin in `gradle/libs.versions.toml`
