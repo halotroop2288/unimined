@@ -1,6 +1,7 @@
 package com.unimined.api.configuration.patcher
 
 import com.unimined.api.ComponentContainer
+import com.unimined.api.provider.patcher.PatcherProvider
 
 /**
  * # Patcher Configuration
@@ -10,22 +11,16 @@ import com.unimined.api.ComponentContainer
  */
 abstract class PatcherConfiguration(
 	/**
-	 * A unique identifier for the configuration.
+	 * A unique identifier for the patcher.
 	 *
-	 * This needs to be set by the patcher provider itself.
+	 * This needs to be passed in by the [PatcherProvider].
 	 *
 	 * **Note: Case-sensitive!**
-	 *
-	 * e.g
-	 * - `"Access Transformer"`, `"Access Widener"`
-	 * - `"Forge Mod Loader"`, `"Fancy Mod Loader"`
-	 * - `"Minecraft Forge"`, `"NeoForge"`
-	 * - `"Fabric Loader"`, `"Quilt Loader"`
 	 *
 	 * @since 2.0.0
 	 */
 	patcherName: String,
-): ComponentContainer(patcherName) {
+) : ComponentContainer(patcherName) {
 	/**
 	 * This should return `0` if the position is valid,
 	 * or throw an error if the position can't be rectified.
@@ -36,7 +31,9 @@ abstract class PatcherConfiguration(
 	 */
 	protected fun validatePosition(
 		/**
-		 * Ordered list of patcher configurations that have already been applied.
+		 * The position of this patcher in the list of applied patchers.
+		 *
+		 * When this patcher is applied, the patchers before it will already have been applied.
 		 *
 		 * e.g. `2` if this is the third patcher (arrays are zero-indexed)
 		 */

@@ -23,14 +23,26 @@ abstract class MappingsSourceProvider(
 	 * `"NMS"`,
 	 *
 	 * `"Searge"`,
+	 *
+	 * `"AccessWidener'`, `""`,
 	 * `"Ploceus"`, `"Babric Intermediary"`, `"Legacy Fabric Intermediary"`, `"Fabric Intermediary"`, `"Hashed Mojmap"`,
 	 *
 	 * `"RetroMCP"`, `"Unknown Thingy"`, `"MCP Legacy"`, `"MCP Snapshot"`, `"MCP Stable"`,
 	 * `"Feather"`, `"Biny"`, `"Legacy Yarn"`, `"Yarn"`
 	 *
 	 * @since 2.0.0
-	 */
+ 	 */
 	sourceName: String,
+	/**
+	 * The format of the mappings file provided by this mappings source.
+	 *
+	 * - See [Unimined Mapping Library](https://github.com/Unimined/UniminedMappingLibrary)
+	 *
+	 * @since 2.0.0
+	 */
+	format: String,
 ) : ComponentContainer(
 	key = "$sourceName Mappings Provider"
-), () -> MappingsSource
+) {
+	abstract operator fun invoke(): MappingsSource
+}

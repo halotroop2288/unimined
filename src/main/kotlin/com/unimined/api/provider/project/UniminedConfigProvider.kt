@@ -36,4 +36,6 @@ abstract class UniminedConfigProvider(
 	 * @since 2.0.0
 	 */
 	uniqueName: String,
-): Component(uniqueName), (String, GameConfiguration) -> UniminedConfiguration
+): Component(uniqueName) {
+	abstract operator fun invoke(configName: String = "Main", game: GameConfiguration): UniminedConfiguration
+}

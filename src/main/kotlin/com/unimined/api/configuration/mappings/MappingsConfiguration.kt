@@ -46,7 +46,7 @@ abstract class MappingsConfiguration(
 	 * - Any names that have not yet been mapped which would normally fall back to Searge
 	 * will then fall back to Ploceus intermediate names.
 	 */
-	sources: List<MappingsSource> = listOf(),
+	val sources: List<MappingsSource> = listOf(),
 	/**
 	 * Applicable environments for this mappings configuration.
 	 *

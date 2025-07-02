@@ -1,6 +1,7 @@
 package com.unimined.api.provider.patcher
 
 import com.unimined.api.Component
+import com.unimined.api.UniminedAPI
 import com.unimined.api.configuration.game.GameConfiguration
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 
@@ -34,17 +35,22 @@ import com.unimined.api.configuration.patcher.PatcherConfiguration
 abstract class PatcherProvider(
 	/**
 	 * This name can be anything, but it has to be unique among all the other patcher providers!
-	 * It will uniquely identify the provider in lookups.
+	 *
+	 * It will uniquely identify the provider in lookups from [UniminedAPI.patcherProviders].
 	 *
 	 * **Note: Case-sensitive!**
 	 *
 	 * e.g
-	 * - `"Access Transformer"`, `"Access Widener"`
+	 * - `"Remapper"`
 	 * - `"Forge Mod Loader"`, `"Fancy Mod Loader"`
-	 * - `"Minecraft Forge"`, `"NeoForge"`
+	 * - `"Minecraft Forge"`, `"NeoForge"`, `"Cleanroom"`
 	 * - `"Fabric Loader"`, `"Quilt Loader"`
+	 * - `"CraftBukkit"`, `"Spigot"`, `"Paper"`
+	 * - `"FoxLoader"`
 	 *
 	 * @since 2.0.0
 	 */
 	uniqueName: String,
-): Component(uniqueName), (String) -> PatcherConfiguration
+): Component(uniqueName) {
+	abstract operator fun invoke(): PatcherConfiguration
+}

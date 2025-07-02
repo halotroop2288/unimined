@@ -1,17 +1,24 @@
 package com.unimined.gradle
 
+import com.unimined.api.LazyServices
 import com.unimined.api.UniminedAPI
 import com.unimined.api.configuration.game.GameConfiguration
 import com.unimined.api.configuration.mappings.MappingsConfiguration
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 import com.unimined.api.configuration.project.UniminedConfiguration
+import com.unimined.api.provider.game.GameProvider
+import com.unimined.api.provider.mappings.MappingsSourceProvider
+import com.unimined.api.provider.patcher.PatcherProvider
+import com.unimined.api.provider.project.UniminedConfigProvider
+import com.unimined.api.singleKey
+import com.unimined.gradle.provider.project.GradleUniminedConfigProvider
+import java.util.*
 import org.gradle.api.Project as GradleProject
 
 /**
- * Returns the project's Unimined extension.
+ * The project's Unimined extension.
  *
- * @throws org.gradle.api.UnknownDomainObjectException
- * if the Unimined extension has not been registered yet.
+ * @throws org.gradle.api.UnknownDomainObjectException if the Unimined extension has not been registered yet.
  *
  * @since 2.0.0
  */
@@ -19,7 +26,7 @@ val GradleProject.unimined: UniminedGradleExtension
 	get() = extensions.getByType(UniminedGradleExtension::class.java)
 
 /**
- * Returns the project's unimined extension only if it has already been registered.
+ * The project's unimined extension only if it has already been registered.
  *
  * @since 2.0.0
  */
@@ -32,13 +39,23 @@ val GradleProject.uniminedMaybe: UniminedGradleExtension?
  * @since 2.0.0
  */
 class UniminedGradleExtension(val project: GradleProject): UniminedAPI {
+	override val configProvider: UniminedConfigProvider = GradleUniminedConfigProvider(project)
+	override val gameProviders: Set<GameProvider> by LazyServices(GameProvider::class)
+	override val mappingsProviders: Set<MappingsSourceProvider> by LazyServices(MappingsSourceProvider::class)
+	override val patcherProviders: Set<PatcherProvider> by LazyServices(PatcherProvider::class)
+
 	override val configurations: HashSet<() -> UniminedConfiguration> = hashSetOf()
+
+	override fun configureUnimined(
+		configName: String,
+		game: () -> GameConfiguration,
+	): () -> UniminedConfiguration = TODO("Not yet implemented")
 
 	override fun configureGame(
 		gameName: String,
 		mappings: () -> MappingsConfiguration,
 		patchers: () -> PatcherConfiguration,
-	): () -> GameConfiguration = fun() = UniminedAPI.GameProviders.find(gameName)(arrayOf(mappings()), arrayOf(patchers()))
+	): () -> GameConfiguration = fun() = gameProviders.singleKey(gameName)(arrayOf(mappings()), arrayOf(patchers()))
 
 	/**
 	 * Registers a Unimined project configuration for the Gradle project.

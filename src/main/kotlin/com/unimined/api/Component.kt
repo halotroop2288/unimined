@@ -1,5 +1,10 @@
 package com.unimined.api
 
+import com.unimined.api.EnvironmentComponent.Companion.supportedValues
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
+import java.net.URI
 import kotlin.reflect.KClass
 
 /**
@@ -18,9 +23,9 @@ abstract class Component(
 	val key: String,
 ) {
 	/**
-	 * Returns true if the component is valid.
-	 *
 	 * 1. Key must not be blank (or null).
+	 *
+	 * @return `true` if the component is valid.
 	 *
 	 * @since 2.0.0
 	 */
@@ -30,6 +35,10 @@ abstract class Component(
 	override fun hashCode(): Int = key.hashCode()
 	override fun equals(other: Any?): Boolean = this::class.isInstance(other) && (other as Component).key == key
 }
+
+fun <T : Component> Collection<T>.singleKey(key: String): T = single { it.key == key }
+fun <T : Component> Collection<T>.findKey(key: String): T? = find { it.key == key }
+fun <T : Component> Collection<T>.filterKey(key: String): List<T> = filter { it.key == key }
 
 /**
  * The base class for all uniquely-identified registered components.
@@ -67,25 +76,25 @@ abstract class ComponentContainer private constructor(
 		"${this@ComponentContainer.key} container: ${components.joinToString(", ", "[", "]")}"
 
 	/**
-	 * Returns true if this contains ANY components with the specified type.
+	 * @return `true` if this contains ANY components with the specified type.
 	 *
 	 * @since 2.0.0
 	 */
 	fun <T : Component> hasAnyOfType(type: KClass<T>): Boolean = any { type.isInstance(it) }
 
 	/**
-	 * Returns true if this contains ANY components with the specified key.
+	 * @return `true` if this contains ANY components with the specified key.
 	 *
 	 * @since 2.0.0
 	 */
 	fun hasAnyNamed(key: String): Boolean = any { key == it.key }
 
 	/**
-	 * Returns components of the specified component type.
+	 * @return components of the specified component type.
 	 *
 	 * @since 2.0.0
 	 */
-	fun <T : Component> ofType(type: KClass<T>): Set<T> = let {
+	fun <T : Component> typed(type: KClass<T>): Set<T> = let {
 		return@let hashSetOf<T>().let { set ->
 			@Suppress("UNCHECKED_CAST")
 			components.forEach { if (type.isInstance(it)) set.add(it as T) }
@@ -94,21 +103,21 @@ abstract class ComponentContainer private constructor(
 	}
 
 	/**
-	 * Returns true if this contains ONLY ONE component with the specified key.
+	 * @return `true` if this contains ONLY ONE component with the specified key.
 	 *
 	 * @since 2.0.0
 	 */
 	fun named(key: String): List<Component> = filter { key == it.key }
 
 	/**
-	 * Returns true if this contains ONLY ONE of the specified component type.
+	 * @return `true` if this contains ONLY ONE of the specified component type.
 	 *
 	 * @since 2.0.0
 	 */
-	fun <T : Component> hasOneOfType(type: KClass<T>): Boolean = ofType(type).size == 1
+	fun <T : Component> hasOneOfType(type: KClass<T>): Boolean = typed(type).size == 1
 
 	/**
-	 * Returns true if this contains ONLY ONE component with the specified key.
+	 * @return true if this contains ONLY ONE component with the specified key.
 	 *
 	 * @since 2.0.0
 	 */
@@ -129,6 +138,36 @@ open class NameComponent(key: String, val value: String) : Component(key) {
 	 */
 	override fun validate(): Boolean = super.validate() && value.isNotBlank()
 	override fun toString(): String = "$key component: $value"
+}
+
+/**
+ * A component that can be resolved to a file.
+ */
+abstract class FileSourceComponent(
+	val value: String,
+	key: String = "File Source",
+): Component(key) {
+	abstract operator fun invoke(): InputStream
+}
+
+class LocalFileSourceComponent(
+	value: String,
+	key: String = "Local File Source",
+): FileSourceComponent(value, key) {
+	override fun invoke(): InputStream = FileInputStream(File(value))
+}
+
+class RemoteFileSourceComponent(
+	value: String,
+	key: String = "Remote File Source",
+): FileSourceComponent(value, key) {
+	override fun invoke(): InputStream = URI(value).toURL().openStream()
+}
+
+fun String.fileSourceComponent(): FileSourceComponent {
+	return if (startsWith("https://") || startsWith("http://")) {
+		RemoteFileSourceComponent(this)
+	} else LocalFileSourceComponent(this)
 }
 
 /**

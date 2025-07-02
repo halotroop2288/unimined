@@ -40,6 +40,8 @@ abstract class UniminedConfigBuilder<out T : UniminedConfiguration>(
 	 */
 	var configurationName: String = "Main",
 	var gameConfiguration: GameConfiguration,
-): () -> T {
+) {
+	abstract operator fun invoke(): T
+
 	fun name(value: String): UniminedConfigBuilder<T> = apply { configurationName = value }
 }

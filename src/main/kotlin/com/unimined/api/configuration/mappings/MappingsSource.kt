@@ -1,6 +1,8 @@
 package com.unimined.api.configuration.mappings
 
-import com.unimined.api.NameComponent
+import com.unimined.api.ComponentContainer
+import com.unimined.api.LocalFileSourceComponent
+import com.unimined.api.fileSourceComponent
 
 /**
  * # Obfuscation Mappings Source
@@ -13,9 +15,21 @@ import com.unimined.api.NameComponent
 abstract class MappingsSource(
 	/**
 	 * The name of the obfuscation mappings this source provides.
+	 *
+	 * e.g
+	 * `"Mojmap"`,
+	 * `"NMS"`,
+	 *
+	 * `"Searge"`,
+	 * `"Ploceus"`, `"Babric Intermediary"`, `"Legacy Fabric Intermediary"`, `"Fabric Intermediary"`, `"Hashed Mojmap"`,
+	 *
+	 * `"RetroMCP"`, `"Unknown Thingy"`, `"MCP Legacy"`, `"MCP Snapshot"`, `"MCP Stable"`,
+	 * `"Feather"`, `"Biny"`, `"Legacy Yarn"`, `"Yarn"`
 	 */
 	name: String,
-): NameComponent("Mappings Source", name) {
+
+	val location: String
+): ComponentContainer("Mappings Source", location.fileSourceComponent()) {
 	/**
 	 *
 	 *
@@ -32,5 +46,5 @@ abstract class MappingsSource(
 	 *
 	 *  @since 2.0.0
 	 */
-	protected abstract fun apply()
+	protected abstract fun validatePosition(): Int
 }
