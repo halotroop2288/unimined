@@ -8,9 +8,8 @@ import com.unimined.api.configuration.patcher.PatcherConfiguration
 /**
  * # Patcher Provider
  *
- * Many [patcher configurations][PatcherConfiguration] may be applied to a [GameConfiguration].
- *
- * Patcher Providers return [PatcherConfiguration] instances by themselves.
+ * Patcher providers must be invoked with [patcher configurations][PatcherConfiguration]
+ * Many patchers may be applied to a [GameConfiguration].
  *
  * ```kt
  * val gameProvider: GameProvider = TODO("Your provider here. Example: Minecraft")
@@ -51,6 +50,4 @@ abstract class PatcherProvider(
 	 * @since 2.0.0
 	 */
 	uniqueName: String,
-): Component(uniqueName) {
-	abstract operator fun invoke(): PatcherConfiguration
-}
+): Component(uniqueName)

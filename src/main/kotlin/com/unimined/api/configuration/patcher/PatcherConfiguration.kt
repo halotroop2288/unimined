@@ -1,6 +1,8 @@
 package com.unimined.api.configuration.patcher
 
+import com.unimined.api.Component
 import com.unimined.api.ComponentContainer
+import com.unimined.api.configuration.ListRectifier
 import com.unimined.api.provider.patcher.PatcherProvider
 
 /**
@@ -20,16 +22,21 @@ abstract class PatcherConfiguration(
 	 * @since 2.0.0
 	 */
 	patcherName: String,
-) : ComponentContainer(patcherName) {
+	vararg components: Component
+) : ComponentContainer("$patcherName Configuration", *components), ListRectifier<PatcherConfiguration> {
 	/**
-	 * This should return `0` if the position is valid,
-	 * or throw an error if the position can't be rectified.
+	 * Reads the list of patchers and validates its position within.
 	 *
-	 * @return The relative position this patcher wants to be moved to.
+	 * The returned list may have more patchers added if needed, but none should be removed.
+	 *
+	 * This should throw an error if the position can't be rectified
+	 * or if an incompatible patcher is found in the list.
+	 *
+	 * @return the rectified list of patchers.
 	 * @throws IllegalArgumentException if this patcher isn't in the list.
 	 * @since 2.0.0
 	 */
-	protected fun validatePosition(
+	override fun rectifyList(
 		/**
 		 * The position of this patcher in the list of applied patchers.
 		 *
@@ -42,13 +49,20 @@ abstract class PatcherConfiguration(
 		 * Ordered list of patcher configurations in which this is indexed at [position].
 		 *
 		 * e.g.
-		 * - AccessWidener(named = false),
-		 * - Remapper(configuration = ...),
-		 * - AccessWidener(named = true),
-		 * - ForgeModLoader(version = ...),
-		 * - MinecraftForge(version = ...),
+		 *
+		 * # Standard FabricMC Usage
+		 *
+		 * - Remapper (optional
+		 * - ForgeModLoader (added by Minecraft Forge)
+		 * - Minecraft Forge
+		 *
+		 * # Standard Minecraft Forge Usage
+		 *
+		 * - Forge Mod Loader (added by Minecraft Forge)
+		 * - **Minecraft Forge**
+		 * - *Un-mapper* (added by Minecraft Forge if Remapper is present)
+		 * - **Remapper**
 		 */
 		patchers: List<PatcherConfiguration>,
-	): (Int) = if (patchers[position] == this) 0
-	else throw IllegalArgumentException("Invalid position. Configuration not found.")
+	): List<PatcherConfiguration> = super.rectifyList(position, patchers)
 }

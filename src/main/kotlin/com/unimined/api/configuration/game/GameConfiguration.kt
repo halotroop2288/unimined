@@ -2,8 +2,7 @@ package com.unimined.api.configuration.game
 
 import com.unimined.api.ComponentContainer
 import com.unimined.api.EnvironmentComponent
-import com.unimined.api.configuration.mappings.MappingsConfiguration
-import com.unimined.api.configuration.patcher.PatcherConfiguration
+import com.unimined.api.configuration.patcher.PatchersConfiguration
 
 /**
  * # Game Configuration
@@ -31,13 +30,11 @@ open class GameConfiguration internal constructor(
 	 *
 	 * @since 2.0.0
 	 */
-	gameName: String,
-
-	mappings: Array<MappingsConfiguration>,
-	patchers: Array<PatcherConfiguration> = arrayOf(),
+	gameName: String = "Unknown",
+	patchers: Array<PatchersConfiguration> = arrayOf(),
 	vararg environments: String = arrayOf("COMBINED")
 ) : ComponentContainer(
 	key = "$gameName Configuration",
-	*mappings, *patchers,
+	*patchers,
 	*EnvironmentComponent.arrayOf(*environments)
 )

@@ -1,17 +1,17 @@
-package com.unimined.api.configuration.mappings
+package com.unimined.mappings.configuration.patcher.remapper
 
-import com.unimined.api.ComponentContainer
 import com.unimined.api.EnvironmentComponent
+import com.unimined.api.configuration.patcher.PatcherConfiguration
 
 /**
- * # Mappings Set Provider Configuration
+ * # Remapper Patcher Configuration
  *
  * This describes how Unimined should resolve and apply (de-)obfuscation mappings to game files.
  *
  * @author halotroop2288
  * @since 2.0.0
  */
-abstract class MappingsConfiguration(
+class RemapperConfiguration(
 	/**
 	 * An ordered list of mappings set sources that describes the order in which mappings should be applied.
 	 *
@@ -37,7 +37,9 @@ abstract class MappingsConfiguration(
 	 * 2. Feather
 	 * 3. MCP
 	 * 4. Ploceus
+	 * 5. AccessWidener
 	 *
+	 * - Access Wideners will be applied whenever they are needed according to their configuration.
 	 * - Legacy Yarn names and comments will be applied
 	 * - Any names that have not yet been mapped which would normally fall back to Legacy Fabric Intermediary
 	 * will then fall back to Feather names.
@@ -46,15 +48,12 @@ abstract class MappingsConfiguration(
 	 * - Any names that have not yet been mapped which would normally fall back to Searge
 	 * will then fall back to Ploceus intermediate names.
 	 */
-	val sources: List<MappingsSource> = listOf(),
-	/**
-	 * Applicable environments for this mappings configuration.
-	 *
-	 * Any environment that is not covered will not be applied.
-	 */
-	vararg environments: String = arrayOf("CLIENT", "SERVER", "COMBINED")
-) : ComponentContainer(
-	key = "Mappings Configuration",
-	*sources.toTypedArray(),
-	*EnvironmentComponent.arrayOf(*environments)
-)
+	val sources: Array<MappingsSource> = arrayOf()
+) : PatcherConfiguration(
+	patcherName = "Remapper",
+	*sources,
+) {
+	val environments: Set<EnvironmentComponent> by lazy { this.typed(EnvironmentComponent::class) }
+
+	override fun validate(): Boolean = super.validate() && environments.all { it.validate() }
+}

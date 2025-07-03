@@ -2,7 +2,6 @@ package com.unimined.api.provider.game
 
 import com.unimined.api.Component
 import com.unimined.api.configuration.game.GameConfiguration
-import com.unimined.api.configuration.mappings.MappingsConfiguration
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 
 /**
@@ -36,4 +35,6 @@ abstract class GameProvider(
 	 * @since 2.0.0
 	 */
 	uniqueName: String,
-): Component(uniqueName), (Array<MappingsConfiguration>, Array<PatcherConfiguration>) -> GameConfiguration
+): Component(uniqueName) {
+	abstract operator fun invoke(patchers: Array<PatcherConfiguration>): GameConfiguration
+}

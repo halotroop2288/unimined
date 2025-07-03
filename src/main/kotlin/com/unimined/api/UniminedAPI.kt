@@ -1,12 +1,9 @@
 package com.unimined.api
 
 import com.unimined.api.configuration.game.GameConfiguration
-import com.unimined.api.configuration.mappings.MappingsConfiguration
-import com.unimined.api.configuration.mappings.MappingsSource
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 import com.unimined.api.configuration.project.UniminedConfiguration
 import com.unimined.api.provider.game.GameProvider
-import com.unimined.api.provider.mappings.MappingsSourceProvider
 import com.unimined.api.provider.patcher.PatcherProvider
 import com.unimined.api.provider.project.UniminedConfigProvider
 import java.util.ServiceLoader
@@ -24,7 +21,6 @@ import kotlin.reflect.KClass
 interface UniminedAPI {
 	val configProvider: UniminedConfigProvider
 	val gameProviders: Set<GameProvider>
-	val mappingsProviders: Set<MappingsSourceProvider>
 	val patcherProviders: Set<PatcherProvider>
 
 	/**
@@ -49,16 +45,10 @@ interface UniminedAPI {
 	 */
 	fun configureGame(
 		gameName: String = "Unknown",
-		mappings: () -> MappingsConfiguration = TODO("MappingsProvider should be an object."),
-		patchers: () -> PatcherConfiguration = TODO(),
-	): () -> GameConfiguration
-
-	/**
-	 * @return a mappings configuration supplier.
-	 */
-	fun configureMappings(
-		sources: List<() -> MappingsSource>
-	): () -> MappingsConfiguration = TODO()
+		patchers: Array<() -> PatcherConfiguration> = arrayOf(),
+	): () -> GameConfiguration = fun() = gameProviders.singleKey(gameName)(
+		patchers = patchers.map { it() }.toTypedArray()
+	)
 }
 
 /**

@@ -3,14 +3,11 @@ package com.unimined.gradle
 import com.unimined.api.LazyServices
 import com.unimined.api.UniminedAPI
 import com.unimined.api.configuration.game.GameConfiguration
-import com.unimined.api.configuration.mappings.MappingsConfiguration
 import com.unimined.api.configuration.patcher.PatcherConfiguration
 import com.unimined.api.configuration.project.UniminedConfiguration
 import com.unimined.api.provider.game.GameProvider
-import com.unimined.api.provider.mappings.MappingsSourceProvider
 import com.unimined.api.provider.patcher.PatcherProvider
 import com.unimined.api.provider.project.UniminedConfigProvider
-import com.unimined.api.singleKey
 import com.unimined.gradle.provider.project.GradleUniminedConfigProvider
 import java.util.*
 import org.gradle.api.Project as GradleProject
@@ -41,7 +38,6 @@ val GradleProject.uniminedMaybe: UniminedGradleExtension?
 class UniminedGradleExtension(val project: GradleProject): UniminedAPI {
 	override val configProvider: UniminedConfigProvider = GradleUniminedConfigProvider(project)
 	override val gameProviders: Set<GameProvider> by LazyServices(GameProvider::class)
-	override val mappingsProviders: Set<MappingsSourceProvider> by LazyServices(MappingsSourceProvider::class)
 	override val patcherProviders: Set<PatcherProvider> by LazyServices(PatcherProvider::class)
 
 	override val configurations: HashSet<() -> UniminedConfiguration> = hashSetOf()
@@ -53,9 +49,10 @@ class UniminedGradleExtension(val project: GradleProject): UniminedAPI {
 
 	override fun configureGame(
 		gameName: String,
-		mappings: () -> MappingsConfiguration,
-		patchers: () -> PatcherConfiguration,
-	): () -> GameConfiguration = fun() = gameProviders.singleKey(gameName)(arrayOf(mappings()), arrayOf(patchers()))
+		patchers: Array<() -> PatcherConfiguration>
+	): () -> GameConfiguration {
+		return super.configureGame(gameName, patchers)
+	}
 
 	/**
 	 * Registers a Unimined project configuration for the Gradle project.
