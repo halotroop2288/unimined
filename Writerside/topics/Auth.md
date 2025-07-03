@@ -12,7 +12,7 @@ unimined.auth.enabled=true
 unimined.auth.username=myUsername
 ```
 
-you only need to specify username if you want to use multiple different accounts, otherwise it will default to the first
+You only need to specify username if you want to use multiple different accounts, otherwise it will default to the first
 account in the cache.
 
 Auth is also accessible under [`runs.auth`](Run-Config.md).
