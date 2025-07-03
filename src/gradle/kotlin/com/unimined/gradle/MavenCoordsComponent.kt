@@ -2,10 +2,13 @@ package com.unimined.gradle
 
 import com.unimined.api.FileSourceComponent
 import xyz.wagyourtail.commonskt.maven.MavenCoords
-import java.io.File
+import java.io.InputStream
 
 /**
  * A component that can be resolved to a file via a Maven artifact.
+ *
+ * @author halotroop2288
+ * @since 2.0.0
  */
 class MavenCoordsComponent(
 	val coordinates: MavenCoords,
@@ -19,6 +22,5 @@ class MavenCoordsComponent(
 		artifact, version, classifier, extension
 	))
 
-	override fun invoke(): File {
-	}
+	override fun invoke(): InputStream = TODO("Not yet implemented")
 }
